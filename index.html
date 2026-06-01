@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة طلبات مطعمي الاحترافية</title>
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --accent-color: #f1c40f;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; color: var(--dark-color); padding-bottom: 60px; }
+        
+        header { background-color: white; padding: 15px 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary-color); display: flex; align-items: center; gap: 10px; }
+        .cart-btn { background: var(--primary-color); color: white; border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 16px; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .cart-btn:hover { transform: scale(1.05); background-color: #c0392b; }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        @media (max-width: 992px) { .container { grid-template-columns: 1fr; } }
+
+        /* كروت المنتجات */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.04); border: 1px solid #eef2f5; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.08); }
+        .product-info { padding: 20px; }
+        .product-badge { background: var(--accent-color); color: var(--dark-color); font-size: 12px; font-weight: bold; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 10px; }
+        .product-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .product-desc { font-size: 14px; color: #7f8c8d; margin-bottom: 15px; height: 40px; overflow: hidden; }
+        
+        /* خيارات الوجبة داخل الكرت */
+        .options-group { background: var(--light-color); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
+        .options-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .options-group select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 5px; background: white; }
+        .extra-checkbox { display: flex; align-items: center; gap: 5px; margin-top: 8px; cursor: pointer; }
+
+        .card-footer { padding: 15px 20px; background: #fafbfc; border-top: 1px solid #f1f2f6; display: flex; justify-content: space-between; align-items: center; }
+        .product-price { color: var(--primary-color); font-size: 20px; font-weight: 800; }
+        .add-to-cart { background: var(--dark-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .add-to-cart:hover { background: var(--primary-color); }
+
+        /* السلة والدفع */
+        .cart-section { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 6px 18px rgba(0,0,0,0.04); height: fit-content; position: sticky; top: 100px; }
+        .cart-title { border-bottom: 2px solid var(--light-color); padding-bottom: 10px; margin-bottom: 15px; font-size: 22px; display: flex; justify-content: space-between; }
+        .cart-item { display: flex; flex-direction: column; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; font-size: 15px; }
+        .cart-item-meta { font-size: 12px; color: #7f8c8d; margin-top: 2px; }
+        .total-box { font-size: 22px; font-weight: bold; margin: 20px 0; display: flex; justify-content: space-between; background: #fff3f3; padding: 15px; border-radius: 8px; color: var(--primary-color); }
+        
+        .checkout-form input, .checkout-form select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; transition: 0.3s; }
+        .checkout-form input:focus { border-color: var(--primary-color); outline: none; }
+        .pay-btn { background: var(--secondary-color); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2); }
+        .pay-btn:hover { background: #27ae60; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🍕 مطعم الشيف البرمجي</div>
+        <button class="cart-btn" onclick="document.querySelector('.cart-section').scrollIntoView({behavior: 'smooth'});">
+            🛒 سلة الطلبات (<span id="cart-count">0</span>)
+        </button>
+    </header>
+
+    <div class="container">
+        <main>
+            <h2 style="margin-bottom: 25px; font-weight: 800;">🔥 الأطباق الأكثر طلباً</h2>
+            <div class="menu-grid" id="menu-container">
+                </div>
+        </main>
+
+        <aside class="cart-section">
+            <h3 class="cart-title"><span>📋 ملخص طلبك</span> <span style="font-size: 14px; color: #888;" id="clear-cart" onclick="clearCart()" style="cursor:pointer;">تفريغ</span></h3>
+            <div id="cart-items">
+                <p style="color: #888; text-align: center; padding: 20px 0;">السلة فارغة، أضف بعض الوجبات الشهية!</p>
+            </div>
+            
+            <div class="total-box">
+                <span>الحساب الإجمالي:</span>
+                <span><span id="cart-total">0</span> ر.س</span>
+            </div>
+
+            <div class="checkout-form">
+                <h4 style="margin-bottom: 12px; font-weight: bold;">📍 بيانات العميل والدفع</h4>
+                <input type="text" id="cus-name" placeholder="الاسم الكامل" required>
+                <input type="text" id="cus-phone" placeholder="رقم الجوال (05xxxxxxx)" required>
+                <input type="text" id="cus-address" placeholder="عنوان التوصيل (الحي، الشارع، الدار)" required>
+                
+                <label style="font-size: 14px; font-weight: bold; display: block; margin-bottom: 5px;">طريقة السداد المفضلّة:</label>
+                <select id="payment-method">
+                    <option value="apple_pay">📱 Apple Pay / مدى (أونلاين)</option>
+                    <option value="card">💳 بطاقة ائتمانية (فيزا / ماستركارد)</option>
+                    <option value="cash">💵 دفع نقداً عند الاستلام</option>
+                </select>
+                
+                <button class="pay-btn" onclick="processPayment()">🚀 تأكيد وإرسال الطلب</button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // قاعدة بيانات المنتجات مع الأحجام والإضافات والأسعار الفردية لكل حجم
+        const products = [
+            { 
+                id: 1, 
+                name: "برجر لحم فاخر", 
+                desc: "شريحة لحم أنغوس مشوية مع الجبن السويسري والخضار الطازجة.",
+                badge: "الأكثر مبيعاً",
+                sizes: { "سنجل": 25, "دبل": 35, "تربل": 45 },
+                hasExtraCheese: true
+            },
+            { 
+                id: 2, 
+                name: "بيتزا سوبر سوبريم", 
+                desc: "عجينة إيطالية غنية بالجبن، الببروني، الفلفل الأخضر والزيتون.",
+                badge: "عائلي",
+                sizes: { "وسط": 39, "كبير": 55 },
+                hasExtraCheese: true
+            },
+            { 
+                id: 3, 
+                name: "ديناميت تشيكن فرنش فرايز", 
+                desc: "بطاطس مقرمشة مغطاة بقطع الدجاج والصلصة الحارة والجبن الذائب.",
+                badge: "جديد",
+                sizes: { "عادي": 18, "حجم عائلي": 28 },
+                hasExtraCheese: false
+            }
+        ];
+
+        let cart = [];
+
+        // توليد المنيو ديناميكياً مع خيارات التخصيص
+        const menuContainer = document.getElementById('menu-container');
+        products.forEach(product => {
+            // توليد خيارات الأحجام
+            let sizeOptions = '';
+            Object.keys(product.sizes).forEach((size, index) => {
+                sizeOptions += `<option value="${size}" ${index===0?'selected':''}>${size} (${product.sizes[size]} ر.س)</option>`;
+            });
+
+            // توليد خيار الجبن الإضافي إن وجد
+            let cheeseHtml = product.hasExtraCheese ? `
+                <label class="extra-checkbox">
+                    <input type="checkbox" id="cheese-${product.id}" onchange="updateCardPrice(${product.id})">
+                    إضافة جبنة ذائبة (+5 ر.س)
+                </label>
+            ` : '';
+
+            // الحصول على السعر المبدئي (أول حجم)
+            const defaultPrice = Object.values(product.sizes)[0];
+
+            menuContainer.innerHTML += `
+                <div class="product-card">
+                    <div class="product-info">
+                        ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
+                        <h3 class="product-title">${product.name}</h3>
+                        <p class="product-desc">${product.desc}</p>
+                        
+                        <div class="options-group">
+                            <label>اختر الحجم:</label>
+                            <select id="size-${product.id}" onchange="updateCardPrice(${product.id})">
+                                ${sizeOptions}
+                            </select>
+                            ${cheeseHtml}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="product-price"><span id="price-view-${product.id}">${defaultPrice}</span> ر.س</div>
+                        <button class="add-to-cart" onclick="addToCart(${product.id})">أضف للسلة</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        // تحديث السعر الظاهري في الكرت عند تغيير الحجم أو الإضافات قبل الضغط على "أضف"
+        function updateCardPrice(id) {
+            const product = products.find(p => p.id === id);
+            const selectedSize = document.getElementById(`size-${id}`).value;
+            let currentPrice = product.sizes[selectedSize];
+            
+            const cheeseCheck = document.getElementById(`cheese-${id}`);
+            if(cheeseCheck && cheeseCheck.checked) {
+                currentPrice += 5;
+            }
+            document.getElementById(`price-view-${id}`).innerText = currentPrice;
+        }
+
+        // إضافة المنتج المخصص إلى السلة
+        function addToCart(id) {
+            const product = products.find(p => p.id === id);
+            const selectedSize = document.getElementById(`size-${id}`).value;
+            const cheeseCheck = document.getElementById(`cheese-${id}`);
+            const extraCheese = cheeseCheck ? cheeseCheck.checked : false;
+
+            let basePrice = product.sizes[selectedSize];
+            if(extraCheese) basePrice += 5;
+
+            // توليد معرف فريد للوجبة بناءً على تعديلاتها (حجمها وإضافاتها) لكي لا تختلط الوجبات المتشابهة ذات الأحجام المختلفة
+            const cartItemId = `${id}-${selectedSize}-${extraCheese}`;
+
+            const exist = cart.find(item => item.cartItemId === cartItemId);
+            
+            if(exist) {
+                exist.quantity++;
+            } else {
+                cart.push({
+                    cartItemId: cartItemId,
+                    name: product.name,
+                    size: selectedSize,
+                    extraCheese: extraCheese,
+                    price: basePrice,
+                    quantity: 1
+                });
+            }
+            updateCart();
+        }
+
+        // تحديث واجهة السلة حسابياً وبصرياً
+        function updateCart() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cart-total');
+            
+            if(cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="color: #888; text-align: center; padding: 20px 0;">السلة فارغة، أضف بعض الوجبات الشهية!</p>';
+                cartCount.innerText = 0;
+                cartTotal.innerText = 0;
+                return;
+            }
+
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+            let count = 0;
+
+            cart.forEach(item => {
+                total += (item.price * item.quantity);
+                count += item.quantity;
+                
+                let metaText = `الحجم: ${item.size}`;
+                if(item.extraCheese) metaText += ` + جبنة إضافية`;
+
+                cartItemsContainer.innerHTML += `
+                    <div class="cart-item">
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                            <span>${item.name} (x${item.quantity})</span>
+                            <span>${item.price * item.quantity} ر.س</span>
+                        </div>
+                        <div class="cart-item-meta">${metaText}</div>
+                    </div>
+                `;
+            });
+
+            cartCount.innerText = count;
+            cartTotal.innerText = total;
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCart();
+        }
+
+        // محاكاة إرسال الطلب ومعالجة بوابات الدفع
+        function processPayment() {
+            const name = document.getElementById('cus-name').value;
+            const phone = document.getElementById('cus-phone').value;
+            const address = document.getElementById('cus-address').value;
+            const method = document.getElementById('payment-method').value;
+            const totalAmount = document.getElementById('cart-total').innerText;
+
+            if(cart.length === 0) {
+                alert('عذراً، سلتك فارغة! اختر وجباتك المفضلة أولاً.');
+                return;
+            }
+            if(!name || !phone || !address) {
+                alert('الرجاء تعبئة بيانات الاسم، الهاتف، وعنوان التوصيل بدقة وضمان وصول الطلب.');
+                return;
+            }
+
+            if(method === 'cash') {
+                alert(`🎉 تم اعتماد طلبك بنجاح يا ${name}!\n💰 القيمة المطالب بها عند الاستلام: ${totalAmount} ر.س.\n⏰ سيصلك مندوبنا خلال 30-45 دقيقة.`);
+            } else {
+                // محاكاة الانتقال الآمن لبوابة الدفع الإلكتروني الـ Sandbox/API
+                alert(`🔒 جاري الاتصال الآمن بالبنك لـ سداد مبلغ [ ${totalAmount} ر.س ] عبر طريقة الدفع المختارة...\n\nشكراً لثقتك بنا يا ${name}! سيتم بدء تحضير طلبك فور اكتمال عملية السداد بنجاح.`);
+            }
+            
+            clearCart();
+            document.getElementById('cus-name').value = '';
+            document.getElementById('cus-phone').value = '';
+            document.getElementById('cus-address').value = '';
+        }
+    </script>
+</body>
+</html>
